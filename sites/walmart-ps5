@@ -1,0 +1,18 @@
+# vim: syntax=bash tabstop=4 shiftwidth=4
+title="Walmart PS5"
+url='https://www.walmart.com/ip/Sony-PlayStation-5-Digital-Edition/493824815'
+
+function testoutput {
+	returntext="$(pup 'div.prod-blitz-copy-message b text{}' <<< "$returnfulltext")"
+	notifytext="$title: may be in stock"
+	if [[ "$returnfulltext" == "blocked - redirecting" ]]; then
+		returntext="$returnfulltext"
+	elif [[ -z "$returntext" ]]; then
+		returntext='<empty>'
+		local tempfile
+		tempfile="$(mktemp -t Walmart-output.XXX)"
+		cat <<< "$returnfulltext" > "$tempfile"
+		return 0
+	fi
+	return 1
+}

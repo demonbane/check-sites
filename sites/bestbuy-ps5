@@ -1,0 +1,20 @@
+# vim: syntax=bash tabstop=4 shiftwidth=4
+title="Best Buy PS5"
+url='https://www.bestbuy.com/site/sony-playstation-5-digital-edition-console/6430161.p?skuId=6430161'
+
+function testoutput {
+	local flag=/tmp/ps5-true
+	declare -A soldout
+	soldout["Sold Out"]=0
+	soldout["Check Stores"]=0
+
+	returntext="$(pup 'button.add-to-cart-button text{}' <<< "$returnfulltext")"
+	notifytext="$title: $returntext"
+	if [ ! -v soldout["$returntext"] -o -n "$1" ] && { [ ! -f "$flag" ] || ! grep -q "$returntext" "$flag"; }; then
+		printf '%s\n%s\n' "$(date --rfc-3339=seconds)" "$returntext" > "$flag"
+		return 0
+	elif [ -f "$flag" ] && ! grep -q "$returntext" "$flag"; then
+		rm -f "$flag"
+	fi
+	return 1
+}

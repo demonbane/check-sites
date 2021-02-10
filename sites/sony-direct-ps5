@@ -1,0 +1,7 @@
+# vim: syntax=bash tabstop=4 shiftwidth=4
+title="Sony Direct PS5"
+url='https://direct.playstation.com/en-us/consoles/console/playstation5-digital-edition-console.3005817'
+
+function testoutput {
+	return 1
+}

@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# vim: syntax=bash tabstop=4 shiftwidth=4
+
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+hash -p /root/go/bin/pup pup
+
+for app in ntfy curl; do
+	if ! hash "$app" 2>/dev/null; then
+		printf '"%s" not found, aborting!\n' "$app"
+		exit 1
+	fi
+done
+
+for file in sites/*; do
+	# In case scripts override any of the values
+	unset title url returntext notifytext headers access_key
+
+	headers="-H @common/headers"
+	access_key="383218c944744516846b1fd8b6302f57"
+
+	scriptname="$(basename "$file")"
+	source "$file"
+
+	returnfulltext="$(curl -sSf "$url" --compressed $headers)"
+	returnstatus=$?
+
+	if [ $returnstatus -eq 0 ]; then
+		testoutput && ntfy -o url "$url" -o priority 1 send "$notifytext"
+		printf -- 'Page output: "%s"\n' "$returntext" | logger $loggeropts -t "check-$scriptname" -p user.info
+	else
+		printf -- 'Error caught in %s, exiting\n' "$scriptname"
+		printf -- 'Error status "%i" caught. Full page output: %s' "$returnstatus" "$returnfulltext" | logger $loggeropts -t "check-$scriptname" -p user.err
+		exit $returnstatus
+	fi
+done
